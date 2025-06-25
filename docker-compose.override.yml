@@ -1,0 +1,35 @@
+services:
+  timur:
+    depends_on:
+      - redis
+      - timur-db
+    environment:
+      spring.data.redis.host: redis
+      spring.profiles.active: dev
+      spring.datasource.url: jdbc:postgresql://timur-db:5432/timur
+      SPRING_CONFIG_ADDITIONAL_LOCATION: "file:/timur-config/"
+    entrypoint:
+      - "java"
+      - "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      - "-Djavax.net.ssl.trustStore=/timur-config/truststore.p12"
+      - "-Djavax.net.ssl.trustStorePassword=changeit"
+      - "-Djavax.net.ssl.keyStore=/timur-config/keystore.p12"
+      - "-Djavax.net.ssl.keyStorePassword=changeit"
+      - "-jar"
+      - "timur.jar"
+    ports:
+      - 443:8443
+      - 5005:5005
+    volumes:
+      - ./application-dev.yml:/timur-config/application.yml:ro
+      - ./local-ssl/keystore.p12:/timur-config/keystore.p12:ro
+      - ../trusted-certs/truststore.p12:/timur-config/truststore.p12:ro
+  redis:
+    image: redis:6.2
+    ports:
+      - 6379:6379
+    networks:
+      - timur-network
+  timur-db:
+    ports:
+      - 5432:5432

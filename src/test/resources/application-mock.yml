@@ -1,0 +1,86 @@
+security:
+  oauth2:
+    client:
+      client-id: eesti-frontend
+      client-secret: xxx
+      scope: openid phone representee.*
+      registered-redirect-uri: http://localhost/authenticate
+      default-post-logout-redirect-uri-template: http://localhost/{lang}/tagasiside
+      user-authorization-uri: https://govsso.test/oidc/authorize
+      access-token-uri: https://govsso.test/oidc/token
+      logout-uri: https://govsso.test/oauth2/sessions/logout
+      audience: http://localhost
+    resource:
+      jwk:
+        key-set-uri: https://govsso.test/oidc/jwks
+    provider:
+      issuer-uri: https://govsso.test/
+
+frontpage:
+  redirect:
+    url: https://example.org
+
+refresh-token:
+  client-secret: client-secret
+  encryption-key: secret-encryptio
+  client-id: client-id
+
+auth:
+  provider: govsso
+  success:
+    redirect:
+      whitelist:
+        - https://example.com
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+
+spring:
+  liquibase:
+    enabled: true
+
+springdoc:
+  api-docs:
+    enabled: false
+
+# legacy integration properties
+legacy-portal-integration:
+  session-cookie-domain: .arendus.eesti.ee
+  # Note! this also affects the JWT timeout period
+  session-timeout-minutes: 30
+  request-ip-header: X-FORWARDED-FOR
+  request-ip-attribute: request_ip
+
+# JWT configuration properties
+jwt-integration:
+  signature:
+    # location of the private key that will be used for signing JWT tokens
+    # to generate the key and the keystore use:
+    # keytool -genkeypair -keyalg rsa -keysize 2048 -alias jwtsign -keystore jwtkeystore.jks -storetype PKCS12
+    # NB! password for both keystore and alias should be the same
+    key-store: classpath:jwtkeystore.p12
+    key-store-password: ppjjpp
+    key-store-type: PKCS12
+    key-alias: jwtsign
+    # JWT issuer property
+    issuer: eesti.ee
+    # JWT cookie name property
+    cookie-name: JWTTOKEN
+    cookie-domain: .arendus.eesti.ee
+  cookies-to-delete:
+    - name: ${jwt-integration.signature.cookie-name}
+      domain: ${legacy-portal-integration.session-cookie-domain}
+      path: /
+
+featureFlags:
+  useAppClientSecretCheck: true
+
+representable-party-selection:
+  url: http://representable-parties
+
+headers:
+  content-security-policy: "default-src 'self'"

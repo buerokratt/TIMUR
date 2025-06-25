@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  timur:
+    build:
+      context: .
+    environment:
+      - logging.level.root=INFO
+    networks:
+      - timur-network
+  timur-db:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=timur
+      - POSTGRES_PASSWORD=timur
+      - POSTGRES_DB=timur
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      - timur-network
+
+networks:
+  timur-network:
+    name: timur-network

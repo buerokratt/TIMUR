@@ -1,0 +1,30 @@
+/logs/
+/javadoc/
+/target/
+application-dev.yml
+
+local-ssl/*
+!local-ssl/README.md
+
+# IDEs and editors
+.project
+.classpath
+.factorypath
+.c9/
+.settings/
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+/out/
+
+### macOS ###
+.DS_Store

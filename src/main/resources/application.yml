@@ -1,0 +1,119 @@
+server:
+  port: 8443
+  servlet:
+    context-path: /timur
+
+security:
+  oauth2:
+    client:
+      client-id: abc
+      client-secret: xxx
+      scope: openid phone representee.* representee_list
+      registered-redirect-uri: http://localhost/authenticate
+      default-post-logout-redirect-uri-template: http://localhost/{lang}/tagasiside
+      user-authorization-uri: https://govsso.test/oidc/authorize
+      access-token-uri: https://govsso.test/oidc/token
+      logout-uri: https://govsso.test/oauth2/sessions/logout
+      audience: http://localhost
+    resource:
+      jwk:
+        key-set-uri: https://govsso.test/oidc/jwks
+    provider:
+      issuer-uri: https://govsso.test/
+
+frontpage:
+  redirect:
+    url: http://localhost
+
+logging:
+  level:
+    root: INFO
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/timur
+    username: timur
+    password: timur
+    driver-class-name: org.postgresql.Driver
+  liquibase:
+    enabled: true
+    change-log: classpath:changelog-standalone.sql
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  profiles:
+    active: dev
+  session:
+    redis:
+      namespace: timur:session
+
+springdoc:
+  packages-to-exclude: org.springframework.boot
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,db
+  health:
+    govsso:
+      enabled: true
+      url: ${security.oauth2.resource.jwk.key-set-uri}
+      timeout: 3000
+
+# legacy integration properties
+legacy-portal-integration:
+  session-cookie-domain: localhost
+  # Note! this also affects the JWT timeout period
+  session-timeout-minutes: 30
+  request-ip-header: X-FORWARDED-FOR
+  request-ip-attribute: request_ip
+
+# JWT configuration properties
+jwt-integration:
+  signature:
+    # location of the private key that will be used for signing JWT tokens
+    # to generate the key and the keystore use:
+    # keytool -genkeypair -keyalg rsa -keysize 2048 -alias jwtsign -keystore jwtkeystore.jks -storetype PKCS12
+    # NB! password for both keystore and alias should be the same
+    key-store: classpath:jwtkeystore.p12
+    key-store-password: ppjjpp
+    key-store-type: PKCS12
+    key-alias: jwtsign
+    # JWT issuer property
+    issuer: localhost
+    # JWT cookie name property
+    cookie-name: JWTTOKEN
+    cookie-domain: localhost
+  cookies-to-delete:
+    - name: ${jwt-integration.signature.cookie-name}
+      domain: ${legacy-portal-integration.session-cookie-domain}
+      path: /
+    - name: ${refresh-token.cookie-name}
+      domain: ${legacy-portal-integration.session-cookie-domain}
+      path: /timur
+
+refresh-token:
+  cookie-name: RT
+  token-length: 96
+  ttl-in-days: 5
+  encryption-key: "Test"
+  client-id: "Test"
+
+auth:
+  provider: govsso
+
+representable-party-selection:
+  url: http://localhost
+
+headers:
+  content-security-policy: "default-src 'self' 'unsafe-inline'; img-src 'self' data:"
+
+featureFlags:
